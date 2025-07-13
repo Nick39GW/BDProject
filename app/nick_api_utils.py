@@ -23,9 +23,14 @@ def search_movies(title):
 
     response = requests.get(url, headers=headers, params=querystring)
     if response.status_code != 200:
-        return {"error": True, "message": "API request failed"}
+        return []
+    
+    data = response.json()
 
-    return response.json().get("results", [])
+    if not isinstance(data, list):
+        return []
+    
+    return data
 
 
 def get_watchmode_id_by_imdb(imdb_id):
