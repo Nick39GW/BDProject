@@ -22,15 +22,22 @@ def search_movies(title):
     }
 
     response = requests.get(url, headers=headers, params=querystring)
+
+    print("Status:", response.status_code)
+    print("Content:", response.text)
+
+
     if response.status_code != 200:
         return []
     
     data = response.json()
+    results = data.get("results", [])
 
-    if not isinstance(data, list):
+    if not isinstance(results, list):
         return []
-    
-    return data
+
+    return results
+
 
 
 def get_watchmode_id_by_imdb(imdb_id):
