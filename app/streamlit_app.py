@@ -1,4 +1,4 @@
-from nick_api_utils import search_movies, get_watchmode_id_by_imdb, get_streaming_sources
+from api_utils import search_movies, get_watchmode_id_by_imdb, get_streaming_sources
 import streamlit as st
 import base64
 
