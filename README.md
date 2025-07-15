@@ -1,3 +1,5 @@
+## Project Description
+
 The project focuses on providing users who are either searching for a movie to watch or have already chosen a movie but don’t know which streaming platform it’s available on. It allows users to search for movies by title or apply filters such as genre or streaming platform. This way, users can either discover new movies that match their preferences or check where a specific movie can be streamed. The goal is to provide both discovery and convenience by showing available streaming options for each movie.
 The project was initiated inspired by the growing number of streaming platforms available today and the fact that many users have multiple subscriptions, yet still struggle to find the movie they want to watch. Often, a movie is only available on a specific platform, or users receive a recommendation and want to watch it, but first need to search across different services to check availability. This process can be frustrating, sometimes leading users to lose interest altogether.
 
