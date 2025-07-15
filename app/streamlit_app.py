@@ -2,7 +2,7 @@ from api_utils import search_movies, get_watchmode_id_by_imdb, get_streaming_sou
 import streamlit as st
 import base64
 
-
+# Set the background image for the Streamlit app using base64-encoded CSS
 def set_background(image_file: str):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -26,28 +26,43 @@ def set_background(image_file: str):
         unsafe_allow_html=True
     )
 
-
+# Set Streamlit page configuration and background
 st.set_page_config(layout="wide", page_title="Movie Explorer", page_icon="🎬")
 set_background("app/background_picture.png")
 
+# App title
 st.title("🎬 Movie Explorer")
 
+# User input for movie title
 title = st.text_input("Enter a movie title")
 
+# Fixed genre and platform filter options
 GENRES = ["Action", "Adventure", "Comedy", "Drama", "Horror", "Romance", "Sci-Fi", "Thriller"]
-PLATFORMS = ["Netflix", "Amazon Prime", "Disney+", "HBO Max", "Apple TV+"]
 
+# Mapping user-friendly names to Watchmode API platform names
+PLATFORM_NAME_MAP = {
+    "Netflix": "Netflix",
+    "Amazon Prime": "Prime Video",
+    "Disney+": "Disney+",
+    "HBO Max": "MAX",
+}
+PLATFORMS = list(PLATFORM_NAME_MAP.keys())
+
+# Multiselect widgets for genre and platform filters
 selected_genres = st.multiselect("🎭 Select genre(s)", GENRES)
 selected_platforms = st.multiselect("📺 Select streaming platform(s)", PLATFORMS)
 
+# Trigger search when button is clicked
 if st.button("Search"):
     query = title.strip()
 
+    # Prevent empty queries with no filters
     if not query and not selected_genres and not selected_platforms:
         st.warning("Please enter a movie title or choose at least one filter.")
     else:
         st.markdown(f"🔎 Searching for: **{query if query else 'Popular Movies'}**...")
         with st.spinner("Searching..."):
+            # Get results from API (by title or defaults)
             if query:
                 results = search_movies(query)
             else:
@@ -61,32 +76,36 @@ if st.button("Search"):
         else:
             st.success(f"✅ Found following result(s):")
 
+            # Sort results by votes and rating
             sorted_results = sorted(
                 results,
                 key=lambda x: (x.get("numVotes") or 0, x.get("averageRating") or 0),
                 reverse=True
             )
 
-            shown = 0
+            shown = 0  # Counter to track how many results were displayed
 
             for movie in sorted_results:
                 genres_list = movie.get("genres") or []
 
-                # If genres selected and no match → skip
+                # Skip movie if selected genres don't match
                 if selected_genres and not any(g in selected_genres for g in genres_list):
                     continue
 
-                # Check streaming platforms
+                # Retrieve Watchmode sources (for streaming info)
                 watchmode_id = get_watchmode_id_by_imdb(movie.get("id"))
                 sources = get_streaming_sources(watchmode_id) if watchmode_id else []
                 sub_sources = [s for s in sources if s.get("type") == "sub"]
                 source_names = [s.get("name") for s in sub_sources if s.get("name")]
 
-                # If platforms selected and no match → skip
-                if selected_platforms and not any(p in source_names for p in selected_platforms):
+                print("Watchmode source names:", source_names)
+
+                # Map selected platform names to API ones and compare
+                selected_mapped_platforms = [PLATFORM_NAME_MAP[p] for p in selected_platforms]
+                if selected_platforms and not any(p in source_names for p in selected_mapped_platforms):
                     continue
 
-                # --- Passed all filters, display movie ---
+                # --- Render movie card in UI ---
                 movie_title = movie.get('primaryTitle', 'Unknown')
                 year = movie.get('startYear', 'N/A')
                 st.markdown(f"### 🎬 {movie_title} ({year})")
@@ -94,6 +113,7 @@ if st.button("Search"):
                 img_data = movie.get("primaryImage")
                 img_url = img_data.get("url") if isinstance(img_data, dict) else img_data
 
+                # Display movie image and info in two columns
                 col1, col2 = st.columns([1, 3])
                 with col1:
                     if img_url:
@@ -112,6 +132,7 @@ if st.button("Search"):
                     if imdb_url:
                         st.markdown(f"🔗 [IMDb Page]({imdb_url})")
 
+                    # Display available streaming platforms with logos
                     if sub_sources:
                         st.markdown("📺 **Available on:**")
                         platform_logos = {
@@ -128,6 +149,7 @@ if st.button("Search"):
                             if name not in unique_platforms:
                                 unique_platforms[name] = platform_logos.get(name)
 
+                        # Render logos in columns
                         cols = st.columns(min(len(unique_platforms), 5))
                         for i, (name, logo) in enumerate(unique_platforms.items()):
                             with cols[i % len(cols)]:
@@ -139,5 +161,6 @@ if st.button("Search"):
                 shown += 1
                 st.markdown("---")
 
+            # Inform if no results matched filters
             if shown == 0:
                 st.info("No results matched your filters. Try adjusting your genre or platform selections.")
