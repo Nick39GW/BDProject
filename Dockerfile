@@ -16,4 +16,4 @@ ENV STREAMLIT_SERVER_PORT=8501
 ENV STREAMLIT_SERVER_HEADLESS=true
 ENV STREAMLIT_SERVER_ENABLECORS=false
 
-CMD ["streamlit", "run", "app/nick_streamlit_app.py"]
+CMD ["streamlit", "run", "app/streamlit_app.py"]
